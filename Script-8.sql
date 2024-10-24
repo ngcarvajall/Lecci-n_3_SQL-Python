@@ -207,9 +207,42 @@ GROUP BY m.id_municipio) AS avg_sens_termi_mun
 WHERE promedio_sens > (SELECT avg(a2.sen_termica_c) AS promedio_temp
 						FROM aemet a2) ;
 -- 4.6. Selecciona los municipios con más de dos fuentes.
+SELECT nombre AS municipio, fuentes_totales 
+FROM (SELECT m.nombre, count(*) AS fuentes_totales 
+FROM municipios m 
+INNER JOIN lugares l 
+ON m.id_municipio = l.id_municipio 
+INNER JOIN categorias c 
+ON l.id_category = c.id_categoria 
+WHERE c.category = 'Fountain'
+GROUP BY m.nombre) AS totales
+WHERE fuentes_totales > 2;
 
 -- 4.7. Localiza la dirección de todos los estudios de cine que estén abiertod en el municipio de "Madrid".
+SELECT address, c.category 
+FROM municipios m 
+INNER JOIN lugares l 
+ON m.id_municipio = l.id_municipio 
+INNER JOIN categorias c 
+ON l.id_category = c.id_categoria 
+WHERE category = 'Film Studio' AND m.nombre = 'madrid';
 
 -- 4.8. Encuentra la máxima temperatura para cada tipo de cielo.
+SELECT c.cielo AS tipo_cielo, MAX(a.temperatura) AS max_temperatura
+FROM 
+    aemet a
+INNER JOIN 
+    cielo c ON a.id_cielo = c.id_cielo
+GROUP BY 
+    c.cielo ;
 
 -- 4.9. Muestra el número de locales por categoría que muy probablemente se encuentren abiertos.
+SELECT c.category AS categoria, COUNT(*) AS numero_locales_abiertos
+FROM 
+    lugares l
+INNER JOIN 
+    categorias c ON l.id_category = c.id_categoria
+WHERE 
+    l.closed_bucket = 'probablemente abierto'
+GROUP BY 
+    c.category ;
